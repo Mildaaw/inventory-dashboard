@@ -3,971 +3,927 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Inventory Dashboard</title>
-    <!-- Google Fonts -->
+    <title>InventoriKu — Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
+    <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Icons (Lucide) -->
     <script src="https://unpkg.com/lucide@latest"></script>
-
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-light: #6366f1;
-            --primary-dark: #4338ca;
-            --secondary: #10b981;
-            --background: #f8fafc;
+            --blue:    #2563eb;
+            --blue-l:  #3b82f6;
+            --blue-xl: #eff6ff;
+            --indigo:  #6366f1;
+            --violet:  #8b5cf6;
+            --teal:    #0d9488;
+            --teal-l:  #14b8a6;
+            --teal-xl: #f0fdfa;
+            --orange:  #f97316;
+            --orange-l:#fb923c;
+            --orange-xl:#fff7ed;
+            --rose:    #e11d48;
+            --rose-l:  #f43f5e;
+            --rose-xl: #fff1f2;
+            --sky:     #0ea5e9;
+            --sky-xl:  #f0f9ff;
+            --bg:      #f4f6fb;
             --surface: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --radius-md: 12px;
-            --radius-lg: 20px;
-            --transition: all 0.3s ease;
+            --border:  #e5e9f2;
+            --text:    #0f1729;
+            --muted:   #64748b;
+            --dim:     #94a3b8;
+            --r:       14px;
+            --r-lg:    20px;
+            --shadow:  0 1px 3px rgba(15,23,42,.06), 0 4px 16px rgba(15,23,42,.06);
+            --shadow-lg: 0 8px 32px rgba(15,23,42,.10);
+            --sidebar-w: 220px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        html, body {
+            height: 100%;
+            overflow: hidden; /* prevent body scroll */
         }
 
         body {
-            background-color: var(--background);
-            color: var(--text-main);
-            min-height: 100vh;
+            font-family: 'Instrument Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
             display: flex;
-            overflow-x: hidden;
         }
 
-        /* Mobile Header */
-        .mobile-header {
-            display: none;
+        /* LOADER */
+        #loader {
+            position: fixed; inset: 0;
             background: var(--surface);
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border);
-            position: fixed;
-            top: 0; left: 0; width: 100%;
-            z-index: 20;
-            justify-content: space-between;
-            align-items: center;
+            z-index: 1000;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; gap: 20px;
+            transition: opacity .5s ease;
         }
-
-        .brand-mobile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--primary);
+        .load-logo {
+            font-family: 'Cabinet Grotesk', sans-serif;
+            font-size: 28px; font-weight: 900;
+            background: linear-gradient(135deg, var(--blue), var(--indigo));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
+        .load-track { width: 160px; height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .load-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--indigo)); border-radius: 3px; animation: fill 1.6s ease forwards; }
+        @keyframes fill { from{width:0%} to{width:100%} }
+        .load-sub { font-size: 12px; color: var(--dim); letter-spacing: 1.5px; text-transform: uppercase; }
 
-        #mobile-menu-btn {
-            background: none;
-            border: none;
-            color: var(--text-main);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-        }
-
-        #mobile-menu-btn:hover {
-            background: var(--background);
-        }
-
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100vh;
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(4px);
-            z-index: 15;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        /* Sidebar */
+        /* SIDEBAR */
         .sidebar {
-            width: 280px;
+            width: var(--sidebar-w);
             background: var(--surface);
             border-right: 1px solid var(--border);
-            padding: 32px 24px;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            height: 100vh;
-            z-index: 30;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 24px 14px;
+            display: flex; flex-direction: column;
+            position: fixed; top: 0; left: 0;
+            height: 100vh; z-index: 30;
+            flex-shrink: 0;
+            transition: transform .3s cubic-bezier(.4,0,.2,1);
         }
 
         .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 48px;
-            letter-spacing: -0.5px;
+            display: flex; align-items: center; gap: 10px;
+            padding: 0 6px; margin-bottom: 30px;
+        }
+        .brand-mark {
+            width: 34px; height: 34px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--blue), var(--indigo));
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(37,99,235,.35);
+        }
+        .brand-name {
+            font-family: 'Cabinet Grotesk', sans-serif;
+            font-size: 17px; font-weight: 900; color: var(--text);
+            letter-spacing: -.4px;
+        }
+        .brand-name em { font-style: normal; color: var(--blue); }
+
+        .nav-label {
+            font-size: 10px; font-weight: 600;
+            letter-spacing: 1.8px; text-transform: uppercase;
+            color: var(--dim); padding: 0 10px; margin: 16px 0 6px;
         }
 
         .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 14px 18px;
-            border-radius: var(--radius-md);
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 15px;
-            transition: var(--transition);
-            margin-bottom: 8px;
-            cursor: pointer;
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px; border-radius: 10px;
+            color: var(--muted); font-size: 13px; font-weight: 500;
+            cursor: pointer; transition: all .18s ease;
+            margin-bottom: 2px; border: none; background: none;
+            width: 100%; text-align: left;
+            font-family: 'Instrument Sans', sans-serif;
         }
-
+        .nav-item:hover { background: var(--bg); color: var(--text); }
         .nav-item.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.3);
+            background: linear-gradient(135deg, var(--blue-xl), #eef2ff);
+            color: var(--blue); font-weight: 600;
+            box-shadow: inset 0 0 0 1px rgba(37,99,235,.15);
         }
+        .nav-item .icon { width: 16px; height: 16px; flex-shrink: 0; }
 
-        .nav-item:not(.active):hover {
-            background: var(--background);
-            color: var(--primary);
-            transform: translateX(4px);
+        .nav-bottom { margin-top: auto; }
+        .nav-item.danger { color: var(--rose); }
+        .nav-item.danger:hover { background: var(--rose-xl); color: var(--rose); }
+
+        /* MOBILE HEADER */
+        .mobile-header {
+            display: none; background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px; position: fixed;
+            top:0; left:0; width:100%; z-index:20;
+            justify-content: space-between; align-items: center;
         }
+        .overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15,23,42,.4); backdrop-filter: blur(4px); z-index: 15;
+        }
+        .overlay.on { display: block; }
 
-        /* Main Content */
-        .main-content {
+        /* MAIN */
+        .main {
             flex: 1;
-            margin-left: 280px;
-            padding: 40px 48px;
-            max-width: 1400px;
-            width: 100%;
-            transition: margin-left 0.3s ease;
+            margin-left: var(--sidebar-w);
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 28px 28px 28px;
+            min-width: 0; /* critical: prevents flex child from overflowing */
         }
 
-        /* Pages logic (SPA) */
-        .page {
-            display: none;
-            animation: fadeIn 0.4s ease;
+        .page { display: none; animation: pageIn .3s ease; }
+        .page.active { display: block; }
+        @keyframes pageIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+        /* PAGE HEADER */
+        .ph {
+            display: flex; justify-content: space-between;
+            align-items: flex-end; margin-bottom: 22px;
+            flex-wrap: wrap; gap: 12px;
         }
-        .page.active {
-            display: block;
+        .ph-title {
+            font-family: 'Cabinet Grotesk', sans-serif;
+            font-size: 26px; font-weight: 900;
+            color: var(--text); letter-spacing: -.8px; line-height: 1;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+        .ph-sub { font-size: 13px; color: var(--muted); margin-top: 5px; }
+
+        .live-badge {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: #ecfdf5; border: 1px solid #a7f3d0;
+            color: #059669; padding: 7px 14px; border-radius: 40px;
+            font-size: 11px; font-weight: 600; letter-spacing: .2px;
+            white-space: nowrap;
+        }
+        .live-dot {
+            width: 7px; height: 7px; background: #10b981;
+            border-radius: 50%; animation: blink 2s infinite; flex-shrink: 0;
+        }
+        @keyframes blink {
+            0%{box-shadow:0 0 0 0 rgba(16,185,129,.6)}
+            70%{box-shadow:0 0 0 7px rgba(16,185,129,0)}
+            100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .header h1 {
-            font-size: 32px;
-            font-weight: 800;
-            letter-spacing: -1px;
-            color: var(--text-main);
-        }
-
-        .header-subtitle {
-            color: var(--text-muted);
-            margin-top: 8px;
-            font-size: 16px;
-            font-weight: 500;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--secondary);
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 14px;
-            box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.2);
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            background: var(--secondary);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-
-        /* Cards */
-        .kpi-cards {
+        /* KPI */
+        .kpi-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px; margin-bottom: 14px;
         }
-
-        .kpi-card {
+        .kpi {
             background: var(--surface);
-            padding: 28px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
             border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            transition: var(--transition);
+            border-radius: var(--r-lg);
+            padding: 16px 18px;
+            display: flex; align-items: center; gap: 12px;
+            box-shadow: var(--shadow);
+            transition: all .2s ease;
+            position: relative; overflow: hidden;
+            min-width: 0;
+        }
+        .kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .kpi-stripe {
+            position: absolute; top: 0; left: 0;
+            width: 4px; height: 100%;
+        }
+        .kpi-icon {
+            width: 38px; height: 38px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .kpi-body { min-width: 0; }
+        .kpi-label {
+            font-size: 10px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); margin-bottom: 3px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .kpi-num {
+            font-family: 'Cabinet Grotesk', sans-serif;
+            font-size: 22px; font-weight: 900;
+            letter-spacing: -.8px; line-height: 1;
+            color: var(--text);
         }
 
-        .kpi-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary-light);
+        /* PANEL */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r-lg);
+            padding: 18px 20px;
+            box-shadow: var(--shadow);
+            min-width: 0;
         }
-
-        .icon-box {
-            width: 72px;
-            height: 72px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .panel-head {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 14px;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .panel-title {
+            font-family: 'Cabinet Grotesk', sans-serif;
+            font-size: 13px; font-weight: 800;
+            color: var(--text); letter-spacing: -.2px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .panel-icon {
+            width: 24px; height: 24px; border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
 
-        .icon-box i { width: 32px; height: 32px; }
-
-        .icon-box.blue {
-            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(79, 70, 229, 0.2));
-            color: var(--primary);
-        }
-
-        .icon-box.green {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
-            color: var(--secondary);
-        }
-
-        .kpi-info h3 {
-            font-size: 14px;
-            color: var(--text-muted);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-
-        .kpi-info p {
-            font-size: 40px;
-            font-weight: 800;
-            color: var(--text-main);
-            line-height: 1;
-            letter-spacing: -1px;
-        }
-
-        /* Grid Layout */
-        .dashboard-grid {
+        /* CHART GRIDS — fluid, no fixed widths */
+        .chart-row1 {
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
-            margin-bottom: 24px;
+            grid-template-columns: minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);
+            gap: 12px; margin-bottom: 12px;
+        }
+        .chart-row2 {
+            display: grid;
+            grid-template-columns: minmax(0,1fr) minmax(0,2fr);
+            gap: 12px; margin-bottom: 24px;
         }
 
-        .panel {
-            background: var(--surface);
-            padding: 32px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border);
-            overflow: hidden;
+        /* TABLE */
+        .search-box {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 10px; padding: 8px 12px;
+            max-width: 240px; width: 100%;
+            transition: border-color .15s;
         }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 28px;
-            flex-wrap: wrap;
-            gap: 16px;
+        .search-box:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+        .search-box input {
+            border: none; background: none; outline: none;
+            font-size: 13px; font-family: inherit; width: 100%; color: var(--text);
         }
+        .search-box input::placeholder { color: var(--dim); }
 
-        .panel-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .search-container {
-            display: flex;
-            align-items: center;
-            background: var(--background);
-            border: 1px solid var(--border);
-            padding: 10px 16px;
-            border-radius: var(--radius-md);
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .search-container input {
-            border: none;
-            background: none;
-            outline: none;
-            width: 100%;
-            margin-left: 10px;
-            font-size: 14px;
-            color: var(--text-main);
-            font-family: inherit;
-        }
-
-        /* Tables */
-        .table-container {
-            overflow-x: auto;
-            width: 100%;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            min-width: 500px;
-        }
-
+        /* Tables — no overflow-x on desktop */
+        .tw { width: 100%; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
         th {
-            background: var(--background);
-            color: var(--text-muted);
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 16px 20px;
-            text-align: left;
-            border-bottom: 2px solid var(--border);
-            white-space: nowrap;
+            font-size: 11px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--muted); padding: 10px 14px;
+            background: var(--bg); border-bottom: 1px solid var(--border);
+            white-space: nowrap; text-align: left;
         }
-
-        th:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
-        th:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
-
+        th:first-child { border-radius: 10px 0 0 0; }
+        th:last-child  { border-radius: 0 10px 0 0; }
         td {
-            padding: 20px;
-            font-size: 15px;
-            font-weight: 600;
-            border-bottom: 1px solid var(--border);
-            color: var(--text-main);
+            padding: 12px 14px; font-size: 13px; font-weight: 500;
+            border-bottom: 1px solid rgba(229,233,242,.7);
+            color: var(--text); transition: background .12s;
         }
-
         tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: #f8faff; }
 
-        tbody tr { transition: var(--transition); }
-        tbody tr:hover { background-color: #f8fafc; }
-
-        .badge-type {
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 700;
-            display: inline-block;
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 600; letter-spacing: .2px;
             white-space: nowrap;
         }
+        .badge.in  { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+        .badge.out { background: var(--rose-xl); color: var(--rose); border: 1px solid #fecdd3; }
 
-        .badge-masuk { 
-            background: rgba(16, 185, 129, 0.1); 
-            color: var(--secondary); 
-            box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.2);
+        .qty-tag {
+            display: inline-flex; align-items: center;
+            padding: 4px 10px; border-radius: 8px;
+            background: var(--bg); border: 1px solid var(--border);
+            font-family: 'Cabinet Grotesk', sans-serif;
+            font-size: 14px; font-weight: 800; color: var(--text);
         }
-        .badge-keluar { 
-            background: rgba(239, 68, 68, 0.1); 
-            color: #ef4444; 
-            box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.2);
-        }
-
-        /* Loader */
-        #loader {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(8px);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.4s ease;
+        .item-ico {
+            width: 28px; height: 28px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--blue-xl); color: var(--blue); flex-shrink: 0;
         }
 
-        .spinner {
-            width: 56px;
-            height: 56px;
-            border: 5px solid rgba(79, 70, 229, 0.2);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        /* EMPTY */
+        .empty {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 60px 20px; text-align: center; gap: 14px;
+        }
+        .empty-ico {
+            width: 64px; height: 64px; border-radius: 20px;
+            background: var(--blue-xl); color: var(--blue);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .empty h3 { font-family: 'Cabinet Grotesk', sans-serif; font-size: 18px; font-weight: 800; }
+        .empty p { font-size: 13px; color: var(--muted); max-width: 320px; line-height: 1.7; }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+
+        /* ── RESPONSIVE BREAKPOINTS ── */
+
+        /* Large desktop: 3-col charts look great */
+        @media(max-width: 1200px) {
+            :root { --sidebar-w: 200px; }
+            .chart-row1 { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+            .chart-row1 > .panel:first-child { grid-column: 1 / -1; } /* bar chart full width */
         }
 
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* Responsive Breakpoints */
-        @media (max-width: 1200px) {
-            .dashboard-grid { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 900px) {
-            .sidebar { 
-                transform: translateX(-100%); 
-            }
-            .sidebar.open {
-                transform: translateX(0);
-                box-shadow: 4px 0 24px rgba(0,0,0,0.1);
-            }
+        @media(max-width: 900px) {
+            :root { --sidebar-w: 0px; }
+            .sidebar { transform: translateX(-100%); width: 220px; }
+            .sidebar.open { transform: translateX(0); box-shadow: 16px 0 48px rgba(0,0,0,.12); }
             .mobile-header { display: flex; }
-            .main-content { 
-                margin-left: 0; 
-                padding: 100px 20px 30px 20px;
-            }
-            .sidebar-overlay.active {
-                display: block;
-                opacity: 1;
-            }
-            .panel { padding: 20px; }
-            .kpi-info p { font-size: 32px; }
+            .main { margin-left: 0; padding: 70px 16px 20px; height: 100vh; }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+            .chart-row1 { grid-template-columns: 1fr; }
+            .chart-row1 > .panel:first-child { grid-column: auto; }
+            .chart-row2 { grid-template-columns: 1fr; }
         }
 
-        @media (max-width: 480px) {
-            .kpi-card { padding: 20px; flex-direction: column; align-items: flex-start; gap: 16px; }
-            .icon-box { width: 56px; height: 56px; }
-            .icon-box i { width: 24px; height: 24px; }
-            .header h1 { font-size: 26px; }
-            .status-badge { width: 100%; justify-content: center; }
-            td { padding: 16px 12px; }
-            .search-container { max-width: 100%; }
+        @media(max-width: 480px) {
+            .kpi-num { font-size: 18px; }
+            .panel { padding: 14px; }
+            .ph-title { font-size: 22px; }
+            /* Scrollable tables only on very small screens */
+            .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            table { min-width: 340px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Initial Loader -->
-    <div id="loader">
-        <div class="spinner"></div>
-        <p style="margin-top: 20px; font-weight: 700; font-size: 18px; color: var(--primary);">Menyiapkan Data...</p>
-        <p style="color: var(--text-muted); margin-top: 8px; font-size: 14px;">Menyinkronkan dengan Google Sheets</p>
-    </div>
+<div id="loader">
+    <div class="load-logo">InventoriKu</div>
+    <div class="load-track"><div class="load-fill"></div></div>
+    <div class="load-sub">Memuat data dashboard</div>
+</div>
 
-    <!-- Mobile Header -->
-    <div class="mobile-header">
-        <div class="brand-mobile">
-            <i data-lucide="layers" style="width: 24px; height: 24px;"></i>
-            InventoriKu
-        </div>
-        <button id="mobile-menu-btn">
-            <i data-lucide="menu"></i>
+<div class="mobile-header">
+    <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--indigo));-webkit-background-clip:text;-webkit-text-fill-color:transparent">InventoriKu</div>
+    <button id="mb-btn" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px;border-radius:9px;cursor:pointer;display:flex;align-items:center;">
+        <i data-lucide="menu" style="width:18px;height:18px;"></i>
+    </button>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div class="brand">
+        <div class="brand-mark"><i data-lucide="layers" style="width:17px;height:17px;"></i></div>
+        <div class="brand-name">Inventori<em>Ku</em></div>
+    </div>
+    <nav>
+        <div class="nav-label">Menu</div>
+        <button class="nav-item active" data-target="pg-dashboard">
+            <i data-lucide="layout-dashboard" class="icon"></i> Dashboard
         </button>
-    </div>
-
-    <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="brand" style="display: flex;">
-            <i data-lucide="layers" style="width: 32px; height: 32px;"></i>
-            InventoriKu
+        <button class="nav-item" data-target="pg-inventaris">
+            <i data-lucide="package-search" class="icon"></i> Inventaris
+        </button>
+        <button class="nav-item" data-target="pg-transaksi">
+            <i data-lucide="arrow-left-right" class="icon"></i> Riwayat Mutasi
+        </button>
+        <div class="nav-bottom">
+            <div style="height:1px;background:var(--border);margin:14px 0;"></div>
+            <button class="nav-item" data-target="pg-pengaturan">
+                <i data-lucide="settings" class="icon"></i> Pengaturan
+            </button>
+            <button class="nav-item danger">
+                <i data-lucide="log-out" class="icon"></i> Keluar
+            </button>
         </div>
-        <nav>
-            <a class="nav-item active" data-target="page-dashboard">
-                <i data-lucide="layout-dashboard"></i> Dashboard Utama
-            </a>
-            <a class="nav-item" data-target="page-inventaris">
-                <i data-lucide="package-search"></i> Inventaris Barang
-            </a>
-            <a class="nav-item" data-target="page-transaksi">
-                <i data-lucide="arrow-left-right"></i> Riwayat Mutasi
-            </a>
-            <a class="nav-item" data-target="page-pengaturan" style="margin-top: 40px;">
-                <i data-lucide="settings"></i> Pengaturan
-            </a>
-            <a class="nav-item" style="color: #ef4444;">
-                <i data-lucide="log-out"></i> Keluar
-            </a>
-        </nav>
-    </aside>
+    </nav>
+</aside>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        
-        <!-- PAGE: DASHBOARD -->
-        <section id="page-dashboard" class="page active">
-            <header class="header">
-                <div>
-                    <h1>Dashboard Inventori</h1>
-                    <p class="header-subtitle">Ringkasan stok dan aktivitas transaksi hari ini</p>
-                </div>
-                <div class="status-badge">
-                    <div class="status-dot"></div>
-                    Terhubung Real-time
-                </div>
-            </header>
+<main class="main">
 
-            <div class="kpi-cards">
-                <div class="kpi-card">
-                    <div class="icon-box blue">
-                        <i data-lucide="boxes"></i>
-                    </div>
-                    <div class="kpi-info">
-                        <h3>Total Jenis Barang</h3>
-                        <p id="totalBarang">0</p>
-                    </div>
+    <!-- DASHBOARD -->
+    <section id="pg-dashboard" class="page active">
+        <div class="ph">
+            <div>
+                <div class="ph-title">Dashboard Inventori</div>
+                <div class="ph-sub">Ringkasan stok &amp; aktivitas transaksi hari ini</div>
+            </div>
+            <div class="live-badge"><div class="live-dot"></div>Sinkronisasi Real-time</div>
+        </div>
+
+        <div class="kpi-row">
+            <div class="kpi">
+                <div class="kpi-stripe" style="background:linear-gradient(to bottom,var(--blue),var(--indigo));"></div>
+                <div class="kpi-icon" style="background:var(--blue-xl);color:var(--blue);">
+                    <i data-lucide="boxes" style="width:17px;height:17px;"></i>
                 </div>
-                <div class="kpi-card">
-                    <div class="icon-box green">
-                        <i data-lucide="package-check"></i>
-                    </div>
-                    <div class="kpi-info">
-                        <h3>Total Volume Stok</h3>
-                        <p id="totalStok">0</p>
-                    </div>
+                <div class="kpi-body">
+                    <div class="kpi-label">Jenis Barang</div>
+                    <div class="kpi-num" id="totalBarang">—</div>
                 </div>
             </div>
-
-            <div class="dashboard-grid">
-                <!-- Chart Panel -->
-                <div class="panel">
-                    <div class="panel-header">
-                        <div class="panel-title">
-                            <i data-lucide="bar-chart-3" style="color: var(--primary)"></i>
-                            Statistik Stok Barang
-                        </div>
-                    </div>
-                    <div style="height: 350px; position: relative; width: 100%;">
-                        <canvas id="chart"></canvas>
-                    </div>
+            <div class="kpi">
+                <div class="kpi-stripe" style="background:linear-gradient(to bottom,var(--teal),var(--sky));"></div>
+                <div class="kpi-icon" style="background:var(--teal-xl);color:var(--teal);">
+                    <i data-lucide="package-check" style="width:17px;height:17px;"></i>
                 </div>
-
-                <!-- Transaction Preview Panel -->
-                <div class="panel">
-                    <div class="panel-header">
-                        <div class="panel-title">
-                            <i data-lucide="history" style="color: var(--primary)"></i>
-                            Mutasi Terkini
-                        </div>
-                    </div>
-                    <div class="table-container" style="max-height: 350px;">
-                        <table id="transaksiPreviewTable">
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th style="text-align: right;">Jml</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
+                <div class="kpi-body">
+                    <div class="kpi-label">Volume Stok</div>
+                    <div class="kpi-num" id="totalStok">—</div>
                 </div>
             </div>
-        </section>
-
-        <!-- PAGE: INVENTARIS BARANG -->
-        <section id="page-inventaris" class="page">
-            <header class="header">
-                <div>
-                    <h1>Inventaris Barang</h1>
-                    <p class="header-subtitle">Kelola dan pantau seluruh daftar ketersediaan stok</p>
+            <div class="kpi">
+                <div class="kpi-stripe" style="background:linear-gradient(to bottom,var(--teal),#22d3ee);"></div>
+                <div class="kpi-icon" style="background:#ecfdf5;color:#059669;">
+                    <i data-lucide="arrow-down-left" style="width:17px;height:17px;"></i>
                 </div>
-            </header>
+                <div class="kpi-body">
+                    <div class="kpi-label">Barang Masuk</div>
+                    <div class="kpi-num" id="totalMasuk">—</div>
+                </div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-stripe" style="background:linear-gradient(to bottom,var(--rose),var(--orange));"></div>
+                <div class="kpi-icon" style="background:var(--rose-xl);color:var(--rose);">
+                    <i data-lucide="arrow-up-right" style="width:17px;height:17px;"></i>
+                </div>
+                <div class="kpi-body">
+                    <div class="kpi-label">Barang Keluar</div>
+                    <div class="kpi-num" id="totalKeluar">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHART ROW 1 -->
+        <div class="chart-row1">
+            <div class="panel">
+                <div class="panel-head">
+                    <div class="panel-title">
+                        <div class="panel-icon" style="background:var(--blue-xl);color:var(--blue);">
+                            <i data-lucide="bar-chart-3" style="width:12px;height:12px;"></i>
+                        </div>
+                        Distribusi Stok Barang
+                    </div>
+                </div>
+                <div style="height:210px;position:relative;"><canvas id="barChart"></canvas></div>
+            </div>
 
             <div class="panel">
-                <div class="panel-header">
+                <div class="panel-head">
                     <div class="panel-title">
-                        <i data-lucide="list-ordered" style="color: var(--primary)"></i>
-                        Daftar Stok Lengkap
-                    </div>
-                    <div class="search-container">
-                        <i data-lucide="search" style="color: var(--text-muted); width: 18px;"></i>
-                        <input type="text" placeholder="Cari nama barang..." onkeyup="filterTable('stokTableFull', this.value)">
+                        <div class="panel-icon" style="background:var(--orange-xl);color:var(--orange);">
+                            <i data-lucide="pie-chart" style="width:12px;height:12px;"></i>
+                        </div>
+                        Proporsi Stok
                     </div>
                 </div>
-                <div class="table-container">
-                    <table id="stokTableFull">
-                        <thead>
-                            <tr>
-                                <th style="width: 70%">Nama Barang</th>
-                                <th>Kuantitas Tersedia</th>
-                            </tr>
-                        </thead>
+                <div style="height:210px;position:relative;"><canvas id="donutChart"></canvas></div>
+            </div>
+
+            <div class="panel" style="display:flex;flex-direction:column;">
+                <div class="panel-head">
+                    <div class="panel-title">
+                        <div class="panel-icon" style="background:#ecfdf5;color:#059669;">
+                            <i data-lucide="activity" style="width:12px;height:12px;"></i>
+                        </div>
+                        Mutasi Terkini
+                    </div>
+                </div>
+                <div style="flex:1;overflow-y:auto;max-height:210px;">
+                    <table id="previewTable">
+                        <thead><tr><th>Item</th><th style="text-align:right">Jml</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- PAGE: RIWAYAT MUTASI -->
-        <section id="page-transaksi" class="page">
-            <header class="header">
-                <div>
-                    <h1>Riwayat Mutasi</h1>
-                    <p class="header-subtitle">Laporan pergerakan barang masuk dan keluar secara mendetail</p>
+        <!-- CHART ROW 2 -->
+        <div class="chart-row2">
+            <div class="panel">
+                <div class="panel-head">
+                    <div class="panel-title">
+                        <div class="panel-icon" style="background:var(--teal-xl);color:var(--teal);">
+                            <i data-lucide="align-left" style="width:12px;height:12px;"></i>
+                        </div>
+                        Peringkat Stok Tertinggi
+                    </div>
                 </div>
-            </header>
+                <div style="height:200px;position:relative;"><canvas id="hbarChart"></canvas></div>
+            </div>
 
             <div class="panel">
-                <div class="panel-header">
+                <div class="panel-head">
                     <div class="panel-title">
-                        <i data-lucide="arrow-left-right" style="color: var(--primary)"></i>
-                        Catatan Transaksi
-                    </div>
-                    <div class="search-container">
-                        <i data-lucide="search" style="color: var(--text-muted); width: 18px;"></i>
-                        <input type="text" placeholder="Cari transaksi..." onkeyup="filterTable('transaksiTableFull', this.value)">
+                        <div class="panel-icon" style="background:var(--rose-xl);color:var(--rose);">
+                            <i data-lucide="trending-up" style="width:12px;height:12px;"></i>
+                        </div>
+                        Tren Mutasi (7 Transaksi Terakhir)
                     </div>
                 </div>
-                <div class="table-container">
-                    <table id="transaksiTableFull">
-                        <thead>
-                            <tr>
-                                <th>Item & Waktu</th>
-                                <th>Status</th>
-                                <th style="text-align: right;">Jumlah</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                <div style="height:200px;position:relative;"><canvas id="lineChart"></canvas></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- INVENTARIS -->
+    <section id="pg-inventaris" class="page">
+        <div class="ph">
+            <div>
+                <div class="ph-title">Inventaris Barang</div>
+                <div class="ph-sub">Kelola dan pantau seluruh ketersediaan stok</div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-head">
+                <div class="panel-title">
+                    <div class="panel-icon" style="background:var(--blue-xl);color:var(--blue);">
+                        <i data-lucide="list-ordered" style="width:12px;height:12px;"></i>
+                    </div>
+                    Daftar Stok Lengkap
+                </div>
+                <div class="search-box">
+                    <i data-lucide="search" style="width:14px;height:14px;color:var(--dim);flex-shrink:0;"></i>
+                    <input type="text" placeholder="Cari barang..." onkeyup="ft('stokTable',this.value)">
                 </div>
             </div>
-        </section>
-
-        <!-- PAGE: PENGATURAN -->
-        <section id="page-pengaturan" class="page">
-            <header class="header">
-                <div>
-                    <h1>Pengaturan Sistem</h1>
-                    <p class="header-subtitle">Konfigurasi preferensi dashboard Anda</p>
-                </div>
-            </header>
-
-            <div class="panel" style="text-align: center; padding: 80px 20px;">
-                <div style="display: inline-flex; justify-content: center; align-items: center; width: 100px; height: 100px; border-radius: 50%; background: var(--background); margin-bottom: 24px;">
-                    <i data-lucide="settings-2" style="width: 48px; height: 48px; color: var(--primary);"></i>
-                </div>
-                <h2 style="font-size: 24px; margin-bottom: 12px; color: var(--text-main);">Fitur Sedang Dikembangkan</h2>
-                <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto; line-height: 1.6;">
-                    Halaman pengaturan sedang dalam tahap penyelesaian oleh developer. Anda akan segera dapat mengatur profil, notifikasi, dan tema di sini.
-                </p>
+            <div class="tw">
+                <table id="stokTable">
+                    <thead><tr><th>Nama Barang</th><th>Kuantitas Tersedia</th></tr></thead>
+                    <tbody></tbody>
+                </table>
             </div>
-        </section>
+        </div>
+    </section>
 
-    </main>
+    <!-- TRANSAKSI -->
+    <section id="pg-transaksi" class="page">
+        <div class="ph">
+            <div>
+                <div class="ph-title">Riwayat Mutasi</div>
+                <div class="ph-sub">Laporan pergerakan barang masuk &amp; keluar</div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-head">
+                <div class="panel-title">
+                    <div class="panel-icon" style="background:var(--blue-xl);color:var(--blue);">
+                        <i data-lucide="arrow-left-right" style="width:12px;height:12px;"></i>
+                    </div>
+                    Catatan Transaksi
+                </div>
+                <div class="search-box">
+                    <i data-lucide="search" style="width:14px;height:14px;color:var(--dim);flex-shrink:0;"></i>
+                    <input type="text" placeholder="Cari transaksi..." onkeyup="ft('txTable',this.value)">
+                </div>
+            </div>
+            <div class="tw">
+                <table id="txTable">
+                    <thead><tr><th>Item &amp; Waktu</th><th>Status</th><th style="text-align:right">Jumlah</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 
-    <script>
-        // Initialize Icons
-        lucide.createIcons();
+    <!-- PENGATURAN -->
+    <section id="pg-pengaturan" class="page">
+        <div class="ph">
+            <div>
+                <div class="ph-title">Pengaturan Sistem</div>
+                <div class="ph-sub">Konfigurasi preferensi dashboard</div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="empty">
+                <div class="empty-ico"><i data-lucide="settings-2" style="width:30px;height:30px;"></i></div>
+                <h3>Sedang Dikembangkan</h3>
+                <p>Halaman pengaturan sedang dalam tahap penyelesaian. Anda akan segera dapat mengatur profil, notifikasi, dan tema di sini.</p>
+            </div>
+        </div>
+    </section>
 
-        const SHEET_ID = "1xKNt9b9TiVshSkdC8E6Ae6vJ0mrhhkzUfFCFR5mF6ak";
-        let chartInstance = null;
-        let isFirstLoad = true;
+</main>
 
-        // --- SPA Navigation & Mobile Sidebar Logic ---
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        const mobileBtn = document.getElementById('mobile-menu-btn');
+<script>
+lucide.createIcons();
 
-        function toggleMobileSidebar() {
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('active');
-        }
+const SHEET_ID = "1xKNt9b9TiVshSkdC8E6Ae6vJ0mrhhkzUfFCFR5mF6ak";
+let barC=null, donutC=null, hbarC=null, lineC=null;
+let firstLoad = true;
 
-        mobileBtn.addEventListener('click', toggleMobileSidebar);
-        overlay.addEventListener('click', toggleMobileSidebar);
+// NAV
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+document.getElementById('mb-btn').addEventListener('click', () => {
+    sidebar.classList.toggle('open'); overlay.classList.toggle('on');
+});
+overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open'); overlay.classList.remove('on');
+});
+document.querySelectorAll('.nav-item[data-target]').forEach(b => {
+    b.addEventListener('click', function() {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(this.dataset.target).classList.add('active');
+        if(window.innerWidth<=900){ sidebar.classList.remove('open'); overlay.classList.remove('on'); }
+    });
+});
 
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const targetId = this.getAttribute('data-target');
-                if (targetId) {
-                    // Update active nav
-                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                    this.classList.add('active');
+// FILTER
+window.ft = (id, q) => {
+    const rows = document.getElementById(id).getElementsByTagName('tr');
+    for(let i=1;i<rows.length;i++)
+        rows[i].style.display = rows[i].textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+};
 
-                    // Update active page
-                    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-                    document.getElementById(targetId).classList.add('active');
+// ANIMATE NUMBER
+function anim(el, end, dur=1200) {
+    let t0=null;
+    const s=(t)=>{
+        if(!t0)t0=t;
+        const p=Math.min((t-t0)/dur,1);
+        const e=1-Math.pow(1-p,4);
+        el.textContent=Math.floor(e*end).toLocaleString('id-ID');
+        if(p<1)requestAnimationFrame(s);
+    };
+    requestAnimationFrame(s);
+}
 
-                    // Close sidebar if on mobile
-                    if (window.innerWidth <= 900) {
-                        sidebar.classList.remove('open');
-                        overlay.classList.remove('active');
-                    }
-                }
-            });
+Chart.defaults.font.family = "'Instrument Sans', sans-serif";
+Chart.defaults.color = '#64748b';
+
+const PALETTE = [
+    '#2563eb','#0d9488','#f97316','#e11d48',
+    '#8b5cf6','#0ea5e9','#d97706','#06b6d4',
+    '#7c3aed','#059669'
+];
+
+// LOAD STOK
+async function loadStok() {
+    try {
+        const res = await fetch(`https://opensheet.elk.sh/${SHEET_ID}/Stok`);
+        const data = await res.json();
+
+        const tbody = document.querySelector('#stokTable tbody');
+        tbody.innerHTML = '';
+
+        let total=0, labels=[], vals=[];
+        data.forEach(r => {
+            const s = Number(r.Stok); total += s;
+            labels.push(r.Barang); vals.push(s);
+            tbody.innerHTML += `
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="item-ico"><i data-lucide="box" style="width:12px;height:12px;"></i></div>
+                    <span style="font-weight:600;">${r.Barang}</span>
+                  </div>
+                </td>
+                <td><span class="qty-tag">${s.toLocaleString('id-ID')}</span></td>
+              </tr>`;
         });
 
-        // --- Table Filtering Logic ---
-        window.filterTable = function(tableId, query) {
-            const table = document.getElementById(tableId);
-            const trs = table.getElementsByTagName("tr");
-            const filter = query.toLowerCase();
+        const elB = document.getElementById('totalBarang');
+        const elS = document.getElementById('totalStok');
+        if(firstLoad){ anim(elB, data.length); anim(elS, total); }
+        else { elB.textContent=data.length.toLocaleString('id-ID'); elS.textContent=total.toLocaleString('id-ID'); }
 
-            for (let i = 1; i < trs.length; i++) {
-                // Combine text of all cells in the row for search
-                let rowText = trs[i].textContent || trs[i].innerText;
-                if (rowText.toLowerCase().indexOf(filter) > -1) {
-                    trs[i].style.display = "";
-                } else {
-                    trs[i].style.display = "none";
-                }
-            }
-        };
+        renderBar(labels, vals);
+        renderDonut(labels, vals);
+        renderHBar(labels, vals);
+        lucide.createIcons();
+    } catch(e){ console.error(e); }
+}
 
-        // --- Data Loading Logic ---
-        function animateValue(obj, start, end, duration) {
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                const easeProgress = 1 - Math.pow(1 - progress, 3);
-                obj.innerHTML = Math.floor(easeProgress * (end - start) + start).toLocaleString('id-ID');
-                if (progress < 1) window.requestAnimationFrame(step);
-            };
-            window.requestAnimationFrame(step);
+function renderBar(labels, vals) {
+    const ctx = document.getElementById('barChart').getContext('2d');
+    if(barC){ barC.data.labels=labels; barC.data.datasets[0].data=vals; barC.update(); return; }
+    barC = new Chart(ctx, {
+        type:'bar',
+        data:{ labels, datasets:[{
+            label:'Stok', data:vals,
+            backgroundColor: vals.map((_,i) => PALETTE[i%PALETTE.length]+'cc'),
+            borderColor:     vals.map((_,i) => PALETTE[i%PALETTE.length]),
+            borderWidth:1.5, borderRadius:7, barPercentage:0.55
+        }]},
+        options:{
+            responsive:true, maintainAspectRatio:false,
+            plugins:{ legend:{display:false},
+              tooltip:{ backgroundColor:'#0f1729', padding:12, cornerRadius:10,
+                titleFont:{size:11,weight:'600'}, bodyFont:{size:13,weight:'700'},
+                displayColors:false, bodyColor:'#fff', titleColor:'#94a3b8' }
+            },
+            scales:{
+              y:{ beginAtZero:true, grid:{color:'rgba(229,233,242,.8)',drawBorder:false}, ticks:{font:{size:10,weight:'600'}} },
+              x:{ grid:{display:false}, ticks:{font:{size:10},maxRotation:30} }
+            },
+            animation:{duration:1000,easing:'easeOutQuart'}
         }
+    });
+}
 
-        async function loadStok() {
-            try {
-                const url = `https://opensheet.elk.sh/${SHEET_ID}/Stok`;
-                const res = await fetch(url);
-                const data = await res.json();
-
-                let tableBodyFull = document.querySelector("#stokTableFull tbody");
-                tableBodyFull.innerHTML = "";
-
-                let totalBarang = data.length;
-                let totalStok = 0;
-                let labels = [];
-                let values = [];
-
-                data.forEach(row => {
-                    let stok = Number(row.Stok);
-                    totalStok += stok;
-
-                    // Row for Full Table
-                    tableBodyFull.innerHTML += `
-                        <tr>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 16px;">
-                                    <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--background); display: flex; align-items: center; justify-content: center; color: var(--primary); border: 1px solid var(--border); flex-shrink: 0;">
-                                        <i data-lucide="box" style="width: 20px; height: 20px;"></i>
-                                    </div>
-                                    <span style="font-weight: 700; word-break: break-word;">${row.Barang}</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span style="font-weight: 800; color: var(--text-main); font-size: 16px; padding: 6px 14px; background: var(--background); border-radius: 8px; border: 1px solid var(--border); white-space: nowrap;">
-                                    ${stok.toLocaleString('id-ID')}
-                                </span>
-                            </td>
-                        </tr>
-                    `;
-
-                    labels.push(row.Barang);
-                    values.push(stok);
-                });
-
-                const elTotalBarang = document.getElementById("totalBarang");
-                const elTotalStok = document.getElementById("totalStok");
-                
-                if (isFirstLoad) {
-                    animateValue(elTotalBarang, 0, totalBarang, 1500);
-                    animateValue(elTotalStok, 0, totalStok, 1500);
-                } else {
-                    elTotalBarang.innerText = totalBarang.toLocaleString('id-ID');
-                    elTotalStok.innerText = totalStok.toLocaleString('id-ID');
-                }
-
-                renderChart(labels, values);
-                lucide.createIcons();
-            } catch (err) {
-                console.error("Gagal memuat stok:", err);
-            }
+function renderDonut(labels, vals) {
+    const ctx = document.getElementById('donutChart').getContext('2d');
+    if(donutC){ donutC.data.labels=labels; donutC.data.datasets[0].data=vals; donutC.update(); return; }
+    donutC = new Chart(ctx, {
+        type:'doughnut',
+        data:{ labels, datasets:[{
+            data:vals,
+            backgroundColor: PALETTE.map(c=>c+'cc'),
+            borderColor: PALETTE,
+            borderWidth:2, hoverOffset:8
+        }]},
+        options:{
+            responsive:true, maintainAspectRatio:false,
+            cutout:'62%',
+            plugins:{
+              legend:{ position:'right', labels:{ boxWidth:8,boxHeight:8,borderRadius:4,
+                  padding:8,font:{size:9,weight:'600'} } },
+              tooltip:{ backgroundColor:'#0f1729', padding:12, cornerRadius:10,
+                displayColors:true, bodyFont:{size:13,weight:'700'} }
+            },
+            animation:{duration:900}
         }
+    });
+}
 
-        function renderChart(labels, data) {
-            const ctx = document.getElementById("chart").getContext('2d');
-            let gradient = ctx.createLinearGradient(0, 0, 0, 350);
-            gradient.addColorStop(0, 'rgba(79, 70, 229, 0.9)');
-            gradient.addColorStop(1, 'rgba(79, 70, 229, 0.2)');
-
-            if (chartInstance) {
-                chartInstance.data.labels = labels;
-                chartInstance.data.datasets[0].data = data;
-                chartInstance.update();
-                return;
-            }
-
-            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
-            Chart.defaults.color = '#64748b';
-
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Jumlah Stok',
-                        data: data,
-                        backgroundColor: gradient,
-                        borderColor: '#4f46e5',
-                        borderWidth: 1,
-                        borderRadius: 8,
-                        barPercentage: 0.5,
-                        hoverBackgroundColor: '#4f46e5'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#0f172a',
-                            padding: 16,
-                            titleFont: { size: 14, weight: '700' },
-                            bodyFont: { size: 15, weight: '600' },
-                            cornerRadius: 12,
-                            displayColors: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: '#f1f5f9', drawBorder: false },
-                            ticks: { font: { weight: '600' } }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { font: { weight: '600' } }
-                        }
-                    },
-                    animation: { duration: 1500, easing: 'easeOutQuart' }
-                }
-            });
+function renderHBar(labels, vals) {
+    const pairs = labels.map((l,i)=>({l,v:vals[i]})).sort((a,b)=>b.v-a.v).slice(0,6);
+    const ctx = document.getElementById('hbarChart').getContext('2d');
+    if(hbarC){
+        hbarC.data.labels=pairs.map(p=>p.l);
+        hbarC.data.datasets[0].data=pairs.map(p=>p.v);
+        hbarC.update(); return;
+    }
+    hbarC = new Chart(ctx, {
+        type:'bar',
+        data:{
+            labels: pairs.map(p=>p.l),
+            datasets:[{
+                label:'Stok', data: pairs.map(p=>p.v),
+                backgroundColor:['#2563eb','#0d9488','#f97316','#e11d48','#8b5cf6','#0ea5e9'].map(c=>c+'bb'),
+                borderColor:    ['#2563eb','#0d9488','#f97316','#e11d48','#8b5cf6','#0ea5e9'],
+                borderWidth:1.5, borderRadius:6, barPercentage:0.55
+            }]
+        },
+        options:{
+            indexAxis:'y',
+            responsive:true, maintainAspectRatio:false,
+            plugins:{ legend:{display:false},
+              tooltip:{ backgroundColor:'#0f1729', padding:12, cornerRadius:10,
+                displayColors:false, bodyFont:{size:13,weight:'700'} }
+            },
+            scales:{
+              x:{ beginAtZero:true, grid:{color:'rgba(229,233,242,.8)',drawBorder:false}, ticks:{font:{size:10,weight:'600'}} },
+              y:{ grid:{display:false}, ticks:{font:{size:10,weight:'600'}} }
+            },
+            animation:{duration:900}
         }
+    });
+}
 
-        async function loadTransaksi() {
-            try {
-                const url = `https://opensheet.elk.sh/${SHEET_ID}/Transaksi`;
-                const res = await fetch(url);
-                const data = await res.json();
+function renderLine(txData) {
+    const last7 = [...txData].reverse().slice(0,7).reverse();
+    const labels = last7.map(r=>r.Tanggal||'');
+    const masukV = last7.map(r=>r.Jenis&&r.Jenis.toLowerCase().includes('masuk')?Number(r.Jumlah):0);
+    const keluarV= last7.map(r=>r.Jenis&&!r.Jenis.toLowerCase().includes('masuk')?Number(r.Jumlah):0);
 
-                let previewBody = document.querySelector("#transaksiPreviewTable tbody");
-                let fullBody = document.querySelector("#transaksiTableFull tbody");
-                
-                previewBody.innerHTML = "";
-                fullBody.innerHTML = "";
+    const ctx = document.getElementById('lineChart').getContext('2d');
+    const gM = ctx.createLinearGradient(0,0,0,180);
+    gM.addColorStop(0,'rgba(13,148,136,.2)'); gM.addColorStop(1,'rgba(13,148,136,0)');
+    const gK = ctx.createLinearGradient(0,0,0,180);
+    gK.addColorStop(0,'rgba(225,29,72,.15)'); gK.addColorStop(1,'rgba(225,29,72,0)');
 
-                const reverseData = data.reverse();
-                
-                reverseData.forEach((row, index) => {
-                    const isMasuk = row.Jenis && row.Jenis.toLowerCase().includes("masuk");
-                    const badgeClass = isMasuk ? "badge-masuk" : "badge-keluar";
-                    const iconType = isMasuk ? "arrow-down-left" : "arrow-up-right";
-                    const colorType = isMasuk ? "var(--secondary)" : "#ef4444";
-                    const sign = isMasuk ? '+' : '-';
-
-                    // Populate Full Table
-                    fullBody.innerHTML += `
-                        <tr>
-                            <td>
-                                <div style="font-weight: 700; color: var(--text-main); font-size: 14px;">${row.Barang}</div>
-                                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-                                    <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
-                                    ${row.Tanggal}
-                                </div>
-                            </td>
-                            <td><span class="badge-type ${badgeClass}">${row.Jenis}</span></td>
-                            <td style="text-align: right;">
-                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-weight: 800; color: ${colorType}; font-size: 15px;">
-                                    ${sign}${row.Jumlah}
-                                    <i data-lucide="${iconType}" style="width: 16px; height: 16px;"></i>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-
-                    // Populate Preview Table (Max 5)
-                    if(index < 5) {
-                        previewBody.innerHTML += `
-                            <tr>
-                                <td>
-                                    <div style="font-weight: 700; color: var(--text-main); font-size: 13px;">${row.Barang}</div>
-                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">${row.Tanggal}</div>
-                                </td>
-                                <td style="text-align: right;">
-                                    <div style="display: inline-flex; align-items: center; gap: 4px; font-weight: 800; color: ${colorType}; font-size: 14px; background: var(--background); padding: 4px 10px; border-radius: 6px;">
-                                        ${sign}${row.Jumlah}
-                                        <i data-lucide="${iconType}" style="width: 14px; height: 14px;"></i>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    }
-                });
-                lucide.createIcons();
-            } catch (err) {
-                console.error("Gagal memuat transaksi:", err);
-            }
+    if(lineC){
+        lineC.data.labels=labels;
+        lineC.data.datasets[0].data=masukV;
+        lineC.data.datasets[1].data=keluarV;
+        lineC.update(); return;
+    }
+    lineC = new Chart(ctx, {
+        type:'line',
+        data:{ labels, datasets:[
+            { label:'Masuk', data:masukV, borderColor:'#0d9488', backgroundColor:gM,
+              tension:.4, pointRadius:3, pointBackgroundColor:'#0d9488',
+              pointBorderColor:'#fff', pointBorderWidth:2, fill:true, borderWidth:2 },
+            { label:'Keluar', data:keluarV, borderColor:'#e11d48', backgroundColor:gK,
+              tension:.4, pointRadius:3, pointBackgroundColor:'#e11d48',
+              pointBorderColor:'#fff', pointBorderWidth:2, fill:true, borderWidth:2 }
+        ]},
+        options:{
+            responsive:true, maintainAspectRatio:false,
+            plugins:{
+              legend:{ position:'top', align:'end', labels:{boxWidth:8,boxHeight:8,borderRadius:4,
+                padding:12,font:{size:10,weight:'600'}} },
+              tooltip:{ backgroundColor:'#0f1729', padding:12, cornerRadius:10,
+                bodyFont:{size:13,weight:'700'} }
+            },
+            scales:{
+              y:{ beginAtZero:true, grid:{color:'rgba(229,233,242,.8)',drawBorder:false}, ticks:{font:{size:10,weight:'600'}} },
+              x:{ grid:{display:false}, ticks:{font:{size:10},maxRotation:20} }
+            },
+            animation:{duration:1000,easing:'easeOutQuart'}
         }
+    });
+}
 
-        async function loadAll() {
-            await Promise.all([loadStok(), loadTransaksi()]);
-            if (isFirstLoad) {
-                const loader = document.getElementById('loader');
-                if(loader) {
-                    loader.style.opacity = '0';
-                    setTimeout(() => {
-                        loader.style.display = 'none';
-                        isFirstLoad = false;
-                        
-                        // Fix chart resizing glitch by updating after visible
-                        if(chartInstance) {
-                            setTimeout(() => {
-                                chartInstance.resize();
-                            }, 100);
-                        }
-                    }, 400);
-                }
+// LOAD TRANSAKSI
+async function loadTx() {
+    try {
+        const res = await fetch(`https://opensheet.elk.sh/${SHEET_ID}/Transaksi`);
+        const data = await res.json();
+
+        const pbody = document.querySelector('#previewTable tbody');
+        const fbody = document.querySelector('#txTable tbody');
+        pbody.innerHTML=''; fbody.innerHTML='';
+
+        let masukTotal=0, keluarTotal=0;
+        const rev = [...data].reverse();
+
+        rev.forEach((r,i) => {
+            const isMasuk = r.Jenis && r.Jenis.toLowerCase().includes('masuk');
+            if(isMasuk) masukTotal+=Number(r.Jumlah);
+            else keluarTotal+=Number(r.Jumlah);
+
+            const color = isMasuk ? '#059669' : '#e11d48';
+            const sign  = isMasuk ? '+' : '−';
+            const bcls  = isMasuk ? 'in' : 'out';
+
+            fbody.innerHTML += `
+              <tr>
+                <td>
+                  <div style="font-weight:600;font-size:13px;">${r.Barang}</div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:4px;">
+                    <i data-lucide="clock" style="width:10px;height:10px;"></i>${r.Tanggal}
+                  </div>
+                </td>
+                <td><span class="badge ${bcls}">${r.Jenis}</span></td>
+                <td style="text-align:right;">
+                  <span style="font-family:'Cabinet Grotesk',sans-serif;font-size:14px;font-weight:800;color:${color};">${sign}${r.Jumlah}</span>
+                </td>
+              </tr>`;
+
+            if(i<6){
+                pbody.innerHTML += `
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:11px;">${r.Barang}</div>
+                      <div style="font-size:10px;color:var(--muted);margin-top:1px;">${r.Tanggal}</div>
+                    </td>
+                    <td style="text-align:right;">
+                      <span style="font-family:'Cabinet Grotesk',sans-serif;font-size:12px;font-weight:800;color:${color};">${sign}${r.Jumlah}</span>
+                    </td>
+                  </tr>`;
             }
-        }
+        });
 
-        // Initialize
-        loadAll();
+        const elM = document.getElementById('totalMasuk');
+        const elK = document.getElementById('totalKeluar');
+        if(firstLoad){ anim(elM, masukTotal); anim(elK, keluarTotal); }
+        else { elM.textContent=masukTotal.toLocaleString('id-ID'); elK.textContent=keluarTotal.toLocaleString('id-ID'); }
 
-        // Auto Refresh
-        setInterval(() => {
-            loadStok();
-            loadTransaksi();
-        }, 5000);
-    </script>
+        renderLine(data);
+        lucide.createIcons();
+    } catch(e){ console.error(e); }
+}
+
+async function loadAll(){
+    await Promise.all([loadStok(), loadTx()]);
+    if(firstLoad){
+        const L=document.getElementById('loader');
+        L.style.opacity='0';
+        setTimeout(()=>{
+            L.style.display='none'; firstLoad=false;
+            [barC,donutC,hbarC,lineC].forEach(c=>c&&c.resize());
+        }, 500);
+    }
+}
+
+loadAll();
+setInterval(loadAll, 10000);
+</script>
 </body>
 </html>
