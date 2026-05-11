@@ -853,72 +853,182 @@ function renderLine(txData) {
 // LOAD TRANSAKSI
 async function loadTx() {
     try {
+
         const res = await fetch(`https://opensheet.elk.sh/${SHEET_ID}/Transaksi`);
         const data = await res.json();
 
         const pbody = document.querySelector('#previewTable tbody');
         const fbody = document.querySelector('#txTable tbody');
-        pbody.innerHTML=''; fbody.innerHTML='';
 
-        let masukTotal=0, keluarTotal=0;
+        pbody.innerHTML = '';
+        fbody.innerHTML = '';
+
+        let masukTotal = 0;
+        let keluarTotal = 0;
+
+        let totalPemasukan = 0;
+        let totalPengeluaran = 0;
+
+        let saldoAkhir = 0;
+
         const rev = [...data].reverse();
 
-        rev.forEach((r,i) => {
-            const isMasuk = r.Jenis && r.Jenis.toLowerCase().includes('masuk');
-            if(isMasuk) masukTotal+=Number(r.Jumlah);
-            else keluarTotal+=Number(r.Jumlah);
+        rev.forEach((r, i) => {
 
-            const color = isMasuk ? '#059669' : '#e11d48';
-            const sign  = isMasuk ? '+' : '−';
-            const bcls  = isMasuk ? 'in' : 'out';
+            totalPemasukan += Number(r.Pemasukan || 0);
+            totalPengeluaran += Number(r.Pengeluaran || 0);
+
+            saldoAkhir = Number(r.Saldo || 0);
+
+            const isMasuk =
+                r.Jenis &&
+                r.Jenis.toLowerCase().includes('masuk');
+
+            if (isMasuk)
+                masukTotal += Number(r.Jumlah);
+
+            else
+                keluarTotal += Number(r.Jumlah);
+
+            const color = isMasuk
+                ? '#059669'
+                : '#e11d48';
+
+            const sign = isMasuk
+                ? '+'
+                : '−';
+
+            const bcls = isMasuk
+                ? 'in'
+                : 'out';
 
             fbody.innerHTML += `
               <tr>
                 <td>
-                  <div style="font-weight:600;font-size:13px;">${r.Barang}</div>
-                  <div style="font-size:11px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:4px;">
-                    <i data-lucide="clock" style="width:10px;height:10px;"></i>${r.Tanggal}
+                  <div style="font-weight:600;font-size:13px;">
+                    ${r.Barang}
+                  </div>
+
+                  <div style="
+                    font-size:11px;
+                    color:var(--muted);
+                    margin-top:2px;
+                    display:flex;
+                    align-items:center;
+                    gap:4px;
+                  ">
+                    <i data-lucide="clock"
+                       style="width:10px;height:10px;">
+                    </i>
+
+                    ${r.Tanggal}
                   </div>
                 </td>
-                <td><span class="badge ${bcls}">${r.Jenis}</span></td>
-                <td style="text-align:right;">
-                  <span style="font-family:'Cabinet Grotesk',sans-serif;font-size:14px;font-weight:800;color:${color};">${sign}${r.Jumlah}</span>
-                </td>
-              </tr>`;
 
-            if(i<6){
+                <td>
+                  <span class="badge ${bcls}">
+                    ${r.Jenis}
+                  </span>
+                </td>
+
+                <td style="text-align:right;">
+
+                  <div style="
+                    font-family:'Cabinet Grotesk',sans-serif;
+                    font-size:14px;
+                    font-weight:800;
+                    color:${color};
+                  ">
+                    ${sign}${r.Jumlah}
+                  </div>
+
+                  <div style="
+                    font-size:10px;
+                    color:var(--muted);
+                    margin-top:2px;
+                  ">
+                    ${r.Payment || '-'}
+                  </div>
+
+                </td>
+              </tr>
+            `;
+
+            if (i < 6) {
+
                 pbody.innerHTML += `
                   <tr>
                     <td>
-                      <div style="font-weight:600;font-size:11px;">${r.Barang}</div>
-                      <div style="font-size:10px;color:var(--muted);margin-top:1px;">${r.Tanggal}</div>
+                      <div style="
+                        font-weight:600;
+                        font-size:11px;
+                      ">
+                        ${r.Barang}
+                      </div>
+
+                      <div style="
+                        font-size:10px;
+                        color:var(--muted);
+                        margin-top:1px;
+                      ">
+                        ${r.Tanggal}
+                      </div>
                     </td>
+
                     <td style="text-align:right;">
-                      <span style="font-family:'Cabinet Grotesk',sans-serif;font-size:12px;font-weight:800;color:${color};">${sign}${r.Jumlah}</span>
+
+                      <div style="
+                        font-family:'Cabinet Grotesk',sans-serif;
+                        font-size:12px;
+                        font-weight:800;
+                        color:${color};
+                      ">
+                        ${sign}${r.Jumlah}
+                      </div>
+
                     </td>
-                  </tr>`;
+                  </tr>
+                `;
             }
         });
 
+        // KPI LAMA
         const elM = document.getElementById('totalMasuk');
         const elK = document.getElementById('totalKeluar');
-        if(firstLoad){ anim(elM, masukTotal); anim(elK, keluarTotal); }
-        else { elM.textContent=masukTotal.toLocaleString('id-ID'); elK.textContent=keluarTotal.toLocaleString('id-ID'); }
+
+        // KPI BARU
+        const elSaldo =
+            document.getElementById('totalSaldo');
+
+        const elPemasukan =
+            document.getElementById('totalPemasukan');
+
+        const elPengeluaran =
+            document.getElementById('totalPengeluaran');
+
+        // UPDATE KPI
+        elM.textContent =
+            masukTotal.toLocaleString('id-ID');
+
+        elK.textContent =
+            keluarTotal.toLocaleString('id-ID');
+
+        elSaldo.textContent =
+            "Rp" + saldoAkhir.toLocaleString('id-ID');
+
+        elPemasukan.textContent =
+            "Rp" + totalPemasukan.toLocaleString('id-ID');
+
+        elPengeluaran.textContent =
+            "Rp" + totalPengeluaran.toLocaleString('id-ID');
 
         renderLine(data);
-        lucide.createIcons();
-    } catch(e){ console.error(e); }
-}
 
-async function loadAll(){
-    await Promise.all([loadStok(), loadTx()]);
-    if(firstLoad){
-        const L=document.getElementById('loader');
-        L.style.opacity='0';
-        setTimeout(()=>{
-            L.style.display='none'; firstLoad=false;
-            [barC,donutC,hbarC,lineC].forEach(c=>c&&c.resize());
-        }, 500);
+        lucide.createIcons();
+
+    } catch(e) {
+
+        console.error(e);
     }
 }
 
