@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InventoriKu — Dashboard</title>
+    <link rel="icon" type="image/png" href="logo Nano OxyWater.png">
+    <title>Nano OxyWater IMS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -88,22 +89,35 @@
         }
 
         .brand {
-            display: flex; align-items: center; gap: 10px;
+            display: flex; align-items: center; gap: 11px;
             padding: 0 6px; margin-bottom: 30px;
         }
         .brand-mark {
-            width: 34px; height: 34px; border-radius: 10px;
-            background: linear-gradient(135deg, var(--blue), var(--indigo));
+            width: 44px; height: 44px; border-radius: 12px;
+            background: linear-gradient(145deg, #0ea5e9 0%, #2563eb 60%, #6366f1 100%);
             display: flex; align-items: center; justify-content: center;
             color: #fff; flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(37,99,235,.35);
+            box-shadow: 0 4px 14px rgba(37,99,235,.38), 0 1px 3px rgba(37,99,235,.2);
+            position: relative; overflow: hidden;
         }
+        .brand-mark::before {
+            content: '';
+            position: absolute; bottom: -6px; right: -6px;
+            width: 28px; height: 28px; border-radius: 50%;
+            background: rgba(255,255,255,.12);
+        }
+        .brand-text-wrap { display: flex; flex-direction: column; gap: 1px; }
         .brand-name {
             font-family: 'Cabinet Grotesk', sans-serif;
-            font-size: 17px; font-weight: 900; color: var(--text);
-            letter-spacing: -.4px;
+            font-size: 15px; font-weight: 900; color: var(--text);
+            letter-spacing: -.4px; line-height: 1.1;
         }
         .brand-name em { font-style: normal; color: var(--blue); }
+        .brand-tag {
+            font-size: 9.5px; font-weight: 600;
+            letter-spacing: 1.6px; text-transform: uppercase;
+            color: var(--dim);
+        }
 
         .nav-label {
             font-size: 10px; font-weight: 600;
@@ -341,7 +355,54 @@
         .empty h3 { font-family: 'Cabinet Grotesk', sans-serif; font-size: 18px; font-weight: 800; }
         .empty p { font-size: 13px; color: var(--muted); max-width: 320px; line-height: 1.7; }
 
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        /* LOGOUT MODAL */
+        .modal-backdrop {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15,23,42,.45); backdrop-filter: blur(6px);
+            z-index: 100; justify-content: center; align-items: center;
+        }
+        .modal-backdrop.on { display: flex; }
+        .modal-box {
+            background: var(--surface); border-radius: var(--r-lg);
+            padding: 30px 28px; max-width: 360px; width: calc(100% - 40px);
+            box-shadow: var(--shadow-lg); animation: pageIn .25s ease;
+            border: 1px solid var(--border);
+        }
+        .modal-icon {
+            width: 52px; height: 52px; border-radius: 16px;
+            background: var(--rose-xl); color: var(--rose);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 16px;
+        }
+        .modal-title {
+            font-family: 'Cabinet Grotesk', sans-serif;
+            font-size: 20px; font-weight: 900; color: var(--text);
+            margin-bottom: 8px;
+        }
+        .modal-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 22px; }
+        .modal-actions { display: flex; gap: 10px; }
+        .btn {
+            flex: 1; padding: 11px 0; border-radius: 10px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            border: 1px solid var(--border); font-family: inherit;
+            transition: all .15s;
+        }
+        .btn-ghost { background: var(--bg); color: var(--muted); }
+        .btn-ghost:hover { background: var(--border); color: var(--text); }
+        .btn-danger { background: var(--rose); color: #fff; border-color: var(--rose); }
+        .btn-danger:hover { background: #be123c; }
+
+        /* TOAST */
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+            background: #0f1729; color: #fff; padding: 12px 20px; border-radius: 12px;
+            font-size: 13px; font-weight: 500; z-index: 200;
+            transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+            display: flex; align-items: center; gap: 8px; white-space: nowrap;
+            box-shadow: 0 8px 24px rgba(0,0,0,.25);
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
 
@@ -379,13 +440,18 @@
 <body>
 
 <div id="loader">
-    <div class="load-logo">InventoriKu</div>
+    <div class="load-logo">💧 NanoOxyWater IMS</div>
     <div class="load-track"><div class="load-fill"></div></div>
     <div class="load-sub">Memuat data dashboard</div>
 </div>
 
 <div class="mobile-header">
-    <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--indigo));-webkit-background-clip:text;-webkit-text-fill-color:transparent">InventoriKu</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(145deg,#0ea5e9,#2563eb,#6366f1);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(37,99,235,.3);">
+            <svg width="18" height="18" viewBox="0 0 26 26" fill="none"><path d="M13 3C13 3 5.5 10.5 5.5 15.5C5.5 19.64 8.86 23 13 23C17.14 23 20.5 19.64 20.5 15.5C20.5 10.5 13 3 13 3Z" fill="rgba(255,255,255,0.92)"/><text x="10" y="18" font-family="sans-serif" font-size="7.5" font-weight="900" fill="#2563eb">O₂</text></svg>
+        </div>
+        <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:17px;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--indigo));-webkit-background-clip:text;-webkit-text-fill-color:transparent">NanoOxyWater IMS</div>
+    </div>
     <button id="mb-btn" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px;border-radius:9px;cursor:pointer;display:flex;align-items:center;">
         <i data-lucide="menu" style="width:18px;height:18px;"></i>
     </button>
@@ -394,8 +460,17 @@
 
 <aside class="sidebar" id="sidebar">
     <div class="brand">
-        <div class="brand-mark"><i data-lucide="layers" style="width:17px;height:17px;"></i></div>
-        <div class="brand-name">Inventori<em>Ku</em></div>
+        <div class="brand-mark">
+            <!-- Water drop + O2 icon -->
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 3C13 3 5.5 10.5 5.5 15.5C5.5 19.64 8.86 23 13 23C17.14 23 20.5 19.64 20.5 15.5C20.5 10.5 13 3 13 3Z" fill="rgba(255,255,255,0.92)"/>
+                <text x="10" y="18" font-family="'Cabinet Grotesk',sans-serif" font-size="7.5" font-weight="900" fill="#2563eb">O₂</text>
+            </svg>
+        </div>
+        <div class="brand-text-wrap">
+            <div class="brand-name"><em>NanoOxy</em>Water</div>
+            <div class="brand-tag">IMS · Inventory</div>
+        </div>
     </div>
     <nav>
         <div class="nav-label">Menu</div>
@@ -413,7 +488,7 @@
             <button class="nav-item" data-target="pg-pengaturan">
                 <i data-lucide="settings" class="icon"></i> Pengaturan
             </button>
-            <button class="nav-item danger">
+            <button class="nav-item danger" id="btn-keluar" title="Keluar dari sesi ini">
                 <i data-lucide="log-out" class="icon"></i> Keluar
             </button>
         </div>
@@ -426,8 +501,8 @@
     <section id="pg-dashboard" class="page active">
         <div class="ph">
             <div>
-                <div class="ph-title">Dashboard Inventori</div>
-                <div class="ph-sub">Ringkasan stok &amp; aktivitas transaksi hari ini</div>
+                <div class="ph-title">Nano OxyWater IMS (Inventory Management System)</div>
+                <div class="ph-sub">Monitoring Stok dan Transaksi Harian Nano OxyWater</div>
             </div>
             <div class="live-badge"><div class="live-dot"></div>Sinkronisasi Real-time</div>
         </div>
@@ -473,6 +548,69 @@
                     <div class="kpi-num" id="totalKeluar">—</div>
                 </div>
             </div>
+            <div class="kpi">
+                <div class="kpi-stripe"
+                    style="background:linear-gradient(to bottom,#0d9488,#14b8a6);">
+                </div>
+
+                <div class="kpi-icon"
+                    style="background:#ecfdf5;color:#0d9488;">
+
+                    <i data-lucide="banknote-arrow-down"
+                    style="width:17px;height:17px;"></i>
+                </div>
+
+                <div class="kpi-body">
+                    <div class="kpi-label">Pemasukan</div>
+
+                    <div class="kpi-num"
+                        id="totalPemasukan">
+                        Rp0
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi">
+                <div class="kpi-stripe"
+                    style="background:linear-gradient(to bottom,#dc2626,#ef4444);">
+                </div>
+
+                <div class="kpi-icon"
+                    style="background:#fef2f2;color:#dc2626;">
+
+                    <i data-lucide="banknote-arrow-up"
+                    style="width:17px;height:17px;"></i>
+                </div>
+
+                <div class="kpi-body">
+                    <div class="kpi-label">Pengeluaran</div>
+
+                    <div class="kpi-num"
+                        id="totalPengeluaran">
+                        Rp0
+                    </div>
+                </div>
+            </div>
+                        <div class="kpi">
+                <div class="kpi-stripe" style="background:linear-gradient(to bottom,#16a34a,#22c55e);"></div>
+
+                <div class="kpi-icon"
+                    style="background:#f0fdf4;color:#16a34a;">
+
+                    <i data-lucide="wallet"
+                    style="width:17px;height:17px;"></i>
+                </div>
+
+                <div class="kpi-body">
+                    <div class="kpi-label">Saldo</div>
+
+                    <div class="kpi-num"
+                        id="totalSaldo">
+                        Rp0
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- CHART ROW 1 -->
@@ -626,8 +764,28 @@
 
 </main>
 
-<script>
-lucide.createIcons();
+<!-- LOGOUT MODAL -->
+<div class="modal-backdrop" id="logoutModal">
+    <div class="modal-box">
+        <div class="modal-icon">
+            <i data-lucide="log-out" style="width:24px;height:24px;"></i>
+        </div>
+        <div class="modal-title">Keluar dari sistem?</div>
+        <div class="modal-desc">Anda akan mengakhiri sesi ini. Data real-time tidak akan lagi diperbarui secara otomatis.</div>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" id="modal-cancel">Batal</button>
+            <button class="btn btn-danger" id="modal-confirm">Ya, Keluar</button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+    <i data-lucide="check-circle" style="width:15px;height:15px;color:#10b981;"></i>
+    <span id="toast-msg">Berhasil</span>
+</div>
+
+
 
 const SHEET_ID = "1xKNt9b9TiVshSkdC8E6Ae6vJ0mrhhkzUfFCFR5mF6ak";
 let barC=null, donutC=null, hbarC=null, lineC=null;
@@ -652,8 +810,41 @@ document.querySelectorAll('.nav-item[data-target]').forEach(b => {
     });
 });
 
-// FILTER
-window.ft = (id, q) => {
+// LOGOUT MODAL
+const logoutModal = document.getElementById('logoutModal');
+document.getElementById('btn-keluar').addEventListener('click', () => {
+    logoutModal.classList.add('on');
+    lucide.createIcons();
+});
+document.getElementById('modal-cancel').addEventListener('click', () => {
+    logoutModal.classList.remove('on');
+});
+document.getElementById('modal-confirm').addEventListener('click', () => {
+    logoutModal.classList.remove('on');
+    showToast('Sesi berakhir. Sampai jumpa! 👋');
+    // Stop auto-refresh
+    clearInterval(window._refreshInterval);
+    // Dim the dashboard to indicate logged out
+    setTimeout(() => {
+        document.querySelector('.main').style.opacity = '.4';
+        document.querySelector('.main').style.pointerEvents = 'none';
+        document.querySelector('.sidebar').style.opacity = '.4';
+    }, 1200);
+});
+// Close modal on backdrop click
+logoutModal.addEventListener('click', e => {
+    if(e.target === logoutModal) logoutModal.classList.remove('on');
+});
+
+// TOAST
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.add('show');
+    lucide.createIcons();
+    setTimeout(() => t.classList.remove('show'), 3500);
+}
+
     const rows = document.getElementById(id).getElementsByTagName('tr');
     for(let i=1;i<rows.length;i++)
         rows[i].style.display = rows[i].textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
@@ -690,9 +881,16 @@ async function loadStok() {
         const tbody = document.querySelector('#stokTable tbody');
         tbody.innerHTML = '';
 
-        let total=0, labels=[], vals=[];
+        let total = 0;
+
+        let labels = [];
+        let vals = [];
         data.forEach(r => {
-            const s = Number(r.Stok); total += s;
+            const s = Number(r.Stok) || 0;
+            const h = Number(r.Harga) || 0;
+
+            total += s;
+
             labels.push(r.Barang); vals.push(s);
             tbody.innerHTML += `
               <tr>
@@ -708,9 +906,19 @@ async function loadStok() {
 
         const elB = document.getElementById('totalBarang');
         const elS = document.getElementById('totalStok');
-        if(firstLoad){ anim(elB, data.length); anim(elS, total); }
-        else { elB.textContent=data.length.toLocaleString('id-ID'); elS.textContent=total.toLocaleString('id-ID'); }
 
+        if(firstLoad){ 
+            anim(elB, data.length); 
+            anim(elS, total);
+        }
+        else {
+
+            elB.textContent =
+                data.length.toLocaleString('id-ID');
+
+            elS.textContent =
+                total.toLocaleString('id-ID');
+        }
         renderBar(labels, vals);
         renderDonut(labels, vals);
         renderHBar(labels, vals);
@@ -869,16 +1077,15 @@ async function loadTx() {
         let totalPemasukan = 0;
         let totalPengeluaran = 0;
 
-        let saldoAkhir = 0;
-
         const rev = [...data].reverse();
+        let saldoAkhir = parseInt(
+            String(rev[0].Saldo).replace(/\./g,'')
+        ) || 0;
 
         rev.forEach((r, i) => {
 
             totalPemasukan += Number(r.Pemasukan || 0);
             totalPengeluaran += Number(r.Pengeluaran || 0);
-
-            saldoAkhir = Number(r.Saldo || 0);
 
             const isMasuk =
                 r.Jenis &&
@@ -992,19 +1199,17 @@ async function loadTx() {
             }
         });
 
-        // KPI LAMA
         const elM = document.getElementById('totalMasuk');
         const elK = document.getElementById('totalKeluar');
-
-        // KPI BARU
-        const elSaldo =
-            document.getElementById('totalSaldo');
 
         const elPemasukan =
             document.getElementById('totalPemasukan');
 
         const elPengeluaran =
             document.getElementById('totalPengeluaran');
+
+        const elSaldo =
+           document.getElementById('totalSaldo');
 
         // UPDATE KPI
         elM.textContent =
@@ -1013,14 +1218,14 @@ async function loadTx() {
         elK.textContent =
             keluarTotal.toLocaleString('id-ID');
 
-        elSaldo.textContent =
-            "Rp" + saldoAkhir.toLocaleString('id-ID');
-
         elPemasukan.textContent =
             "Rp" + totalPemasukan.toLocaleString('id-ID');
 
         elPengeluaran.textContent =
             "Rp" + totalPengeluaran.toLocaleString('id-ID');
+
+        elSaldo.textContent =
+            "Rp" + saldoAkhir.toLocaleString('id-ID');
 
         renderLine(data);
 
@@ -1032,8 +1237,25 @@ async function loadTx() {
     }
 }
 
+function dismissLoader(){
+    if(!firstLoad) return;
+    const L=document.getElementById('loader');
+    L.style.opacity='0';
+    setTimeout(()=>{ L.style.display='none'; firstLoad=false;
+        [barC,donutC,hbarC,lineC].forEach(c=>c&&c.resize());
+    }, 500);
+}
+
+async function loadAll(){
+    await Promise.all([loadStok(), loadTx()]);
+    dismissLoader();
+}
+
+// Fallback: kalau fetch gagal (misal buka via file://) loader tetap hilang setelah 5 detik
+setTimeout(dismissLoader, 5000);
+
 loadAll();
-setInterval(loadAll, 10000);
+window._refreshInterval = setInterval(loadAll, 10000);
 </script>
 </body>
 </html>
